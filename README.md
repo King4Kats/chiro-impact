@@ -115,7 +115,12 @@ Tout reste sur le PC : les fichiers WAV et la base de données sont dans `backen
 4. **Attendre l'analyse.** Elle va environ 8 fois plus vite que la durée enregistrée sur un PC récent : 1 heure
    d'enregistrement ≈ 7 à 8 minutes.
 5. Onglet **Synthèse** : activité du festival et du témoin, phase par phase, et cris par groupe.
-6. **Cliquer sur un fichier** pour voir son spectrogramme, écouter les cris ralentis 10 fois (pour les rendre
+6. Onglet **Comparer** : la même comparaison, mais avec des réglages qu'on peut changer pour voir si la conclusion
+   tient : seuil de score, durée d'un contact, même plage horaire chaque nuit, sites, nuits à écarter (pluie,
+   panne…), groupe d'espèces, contacts ou cris par heure, façon de faire la moyenne. La page affiche l'écart
+   d'évolution entre le festival et le témoin, l'activité nuit par nuit, le détail par groupe, et permet de
+   **télécharger un CSV par site et par nuit** pour une analyse statistique.
+7. **Cliquer sur un fichier** pour voir son spectrogramme, écouter les cris ralentis 10 fois (pour les rendre
    audibles) et vérifier les détections une par une.
 
 Chaque élément de l'interface a une bulle **?** qui l'explique. La page **« Comment ça marche »** de l'outil détaille
@@ -230,14 +235,15 @@ chiro-impact/
 │   │   ├── worker.py          file d'attente des analyses (un « ouvrier » en arrière-plan)
 │   │   ├── detection.py       pont vers BatDetect2
 │   │   ├── analysis.py        groupes d'espèces, contacts, dates, nuits, phases, résumés
+│   │   ├── compare.py         calculs de la page Comparer (réglages, plage horaire, site × nuit)
 │   │   ├── metadata.py        lecture de l'heure et du fuseau dans le WAV
 │   │   ├── spectro.py         image du spectrogramme et extrait sonore ralenti
 │   │   └── config.py          réglages (variables d'environnement)
 │   ├── scripts/creer_demo.py  fabrique une campagne de démonstration
-│   └── tests/                 45 tests automatiques (pytest)
+│   └── tests/                 53 tests automatiques (pytest)
 ├── frontend/                  interface web (React + Vite + Tailwind)
 │   └── src/
-│       ├── pages/             Campagnes, Campagne, Fichier (spectrogramme), Comment ça marche
+│       ├── pages/             Campagnes, Campagne, Comparer, Fichier (spectrogramme), Comment ça marche
 │       ├── components/        en-tête, bulles d'aide, dépôt, sites, dates, synthèse
 │       ├── api.js             toutes les requêtes vers le serveur
 │       └── theme.js           thème clair / sombre
@@ -275,7 +281,7 @@ cd backend
 .venv\Scripts\python -m pytest
 ```
 
-45 tests, environ 1 min 30. Ils utilisent de vrais cris de chauves-souris (`docs/demo_wav/`) et comparent les
+53 tests, environ 1 min 30. Ils utilisent de vrais cris de chauves-souris (`docs/demo_wav/`) et comparent les
 détections de l'outil à celles de BatDetect2 utilisé directement.
 
 ### Campagne de démonstration
@@ -325,8 +331,8 @@ par un identifiant et un mot de passe, stockés dans un fichier `deploy/.env` qu
 
 Détail complet dans [`docs/AUDIT.md`](docs/AUDIT.md). Les principales :
 
-- **Pas encore de preuve statistique.** Il faudra un export des contacts **par nuit** et un modèle statistique
-  (comptages, effet « phase × type de site »).
+- **Pas encore de preuve statistique.** L'export **par site et par nuit** existe (page Comparer) ; le modèle
+  statistique (comptages, effet « phase × type de site ») reste à faire, par exemple dans R.
 - **Plage horaire non contrôlée.** L'activité est divisée par la durée des fichiers. C'est juste si l'enregistreur
   couvre la même plage chaque nuit (par exemple du coucher du soleil −30 min au lever +30 min).
 - **Plusieurs nuits par phase** sont nécessaires (au moins 3 à 5), et la **météo** de chaque nuit compte beaucoup.

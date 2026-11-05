@@ -296,3 +296,15 @@ Il a aussi demandé une mise en ligne temporaire.
   site, fichier) ; changer le site d'un fichier ne vérifie pas les doublons ; la frise d'un fichier n'a pas de
   commande clavier propre ; CORS ouvert à toutes les origines.
 - Le site en ligne temporaire n'a pas encore reçu le thème clair/sombre ni ces corrections.
+
+## 2026-11-05 (nuit) — Page « Comparer »
+
+- Nouvel onglet **Comparer** sur chaque campagne (adresse `/campaigns/:id/comparer`).
+- Réglages recalculés par le serveur (`backend/app/compare.py`, route `GET /api/campaigns/{id}/compare`) :
+  seuil de score (0,1 à 0,95), durée d'un contact (1 à 60 s), même plage horaire chaque nuit.
+- Réglages appliqués dans le navigateur : sites, nuits écartées, groupe, contacts ou cris par heure,
+  moyenne « par nuit » ou « totale ».
+- Résultats : activité par phase (avec nombre de nuits et min–max), écart BACI descriptif festival vs témoin,
+  courbe nuit par nuit, tableau par groupe, détail site × nuit et **export CSV** (format Excel français).
+- Avec les réglages par défaut, les chiffres sont identiques à ceux de la synthèse (test automatique).
+- Toujours descriptif : pas de test statistique.

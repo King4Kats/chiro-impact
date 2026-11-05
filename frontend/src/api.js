@@ -121,6 +121,13 @@ export const api = {
   // Synthèse
   // Chiffres agrégés de la campagne (par phase, par site, par groupe), affichés par Summary.jsx.
   summary: (cid) => request(`/campaigns/${cid}/summary`),
+  // Page « Comparer » : une ligne par site × nuit, recalculée avec les réglages choisis.
+  // URLSearchParams fabrique la fin d'adresse « ?threshold=0.3&window=5… » en échappant les valeurs.
+  compare: (cid, p) => {
+    const q = new URLSearchParams({ threshold: p.threshold, window: p.window })
+    if (p.hours) { q.set('h_start', p.hours[0]); q.set('h_end', p.hours[1]) }
+    return request(`/campaigns/${cid}/compare?${q}`)
+  },
 }
 
 // Libellés affichés pour les phases (la base stocke les clés sans accent)

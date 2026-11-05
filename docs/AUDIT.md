@@ -146,7 +146,7 @@ Mac Aodha et al. (2022), application note AudioMoth « Triggered T.WAV », firmw
 
 | Gravité | Problème | Piste |
 |---|---|---|
-| Haute | Pas d'analyse statistique ni d'export par nuit | Export CSV « site × nuit × groupe », puis script d'analyse |
+| Haute | Pas d'analyse statistique (l'export CSV « site × nuit × groupe » existe depuis le 05/11, page Comparer) | Script d'analyse (modèle de comptage) |
 | Haute | Contacts tous groupes confondus | Ajouter les contacts **par groupe** |
 | Haute | Pas d'outil de validation (marquer « pas une chauve-souris ») | Bouton par cri, exclu des chiffres ; taux de relecture affiché |
 | Moyenne | Fichiers T.WAV refusés au lieu d'être dépliés | Porter `expand.c` d'Open Acoustic Devices (court) |

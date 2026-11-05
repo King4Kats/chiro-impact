@@ -281,6 +281,26 @@ def test_reprise_apres_erreur(client, campagne):
     assert client.get(f"/api/recordings/{rid}").json()["status"] == "done"
 
 
+# La page « Comparer » avec les réglages par défaut doit retrouver EXACTEMENT les contacts de la synthèse
+# (même seuil 0,3, mêmes tranches de 5 s) : sinon les deux pages se contrediraient.
+def test_comparer_coherent_avec_la_synthese(client, campagne):
+    cid = campagne["id"]
+    analysed(client, cid)
+    cmp = client.get(f"/api/campaigns/{cid}/compare").json()
+    synth = client.get(f"/api/campaigns/{cid}/summary").json()
+    assert cmp["rows"], "aucune ligne : le test comparerait du vide"
+    for p in ("avant", "pendant", "apres"):
+        assert sum(r["contacts"] for r in cmp["rows"] if r["phase"] == p) == synth["phases"][p]["contacts"]
+    # Un seuil plus haut ne peut que réduire le nombre de cris
+    haut = client.get(f"/api/campaigns/{cid}/compare?threshold=0.8").json()
+    assert sum(r["calls"] for r in haut["rows"]) <= sum(r["calls"] for r in cmp["rows"])
+    # Réglages invalides refusés proprement
+    assert client.get(f"/api/campaigns/{cid}/compare?threshold=0.05").status_code == 422
+    assert client.get(f"/api/campaigns/{cid}/compare?h_start=21").status_code == 422
+    assert client.get(f"/api/campaigns/{cid}/compare?h_start=6&h_end=21").status_code == 422
+    assert client.get(f"/api/campaigns/{cid}/compare?h_start=21&h_end=6").status_code == 200
+
+
 # Vérifie que si le WAV a disparu du disque, le spectrogramme répond 410 (« disparu »)
 # au lieu de planter. Le fichier est renommé le temps du test, puis remis en place
 # (« finally » s'exécute même si l'assert échoue).
@@ -354,3 +374,4 @@ def test_patch_nom_vide_refuse(client):
     assert client.patch(f"/api/sites/{sid}", json={"is_control": None}).status_code == 422
     assert client.patch(f"/api/sites/{sid}", json={"name": "S2"}).status_code == 200
     client.delete(f"/api/campaigns/{cid}")
+

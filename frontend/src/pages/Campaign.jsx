@@ -161,6 +161,9 @@ export default function Campaign() {
           <div className="flex gap-1 border-b-2 border-line mb-4 overflow-x-auto overflow-y-hidden">
             {tabBtn('recs', `Enregistrements (${recs.length})`)}
             {tabBtn('summary', 'Synthèse')}
+            {/* « Comparer » n'est pas un onglet interne mais une page à part (plus de place pour les
+                réglages) : un Link (lien de react-router) qui a le même aspect que les onglets. */}
+            <Link to={`/campaigns/${id}/comparer`} className="px-3 sm:px-4 py-2 border-b-[3px] -mb-[2px] border-transparent font-medium whitespace-nowrap text-slate-light hover:text-slate">Comparer →</Link>
           </div>
           {/* Ternaire : on affiche soit la liste des fichiers, soit la synthèse.
               `onChange={load}` passe la fonction de rechargement aux enfants : après

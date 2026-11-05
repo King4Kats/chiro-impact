@@ -50,14 +50,14 @@ from pathlib import Path
 # - Literal["a", "b"] = « seulement l'une de ces valeurs exactes ».
 from typing import Literal, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 # Pydantic vérifie automatiquement les données reçues (types, longueurs…) à partir d'une classe
 from pydantic import BaseModel, Field
 
-from . import analysis, detection, metadata, spectro, worker
+from . import analysis, compare, detection, metadata, spectro, worker
 from .config import FRONT_DIST, MIN_SAMPLERATE, UPLOAD_DIR
 from .db import get_conn, init_db
 
@@ -756,6 +756,59 @@ def summary(cid: int):
 
     return {"phases": by_phase, "by_type": by_type, "sites": by_site, "nights": by_night,
             "calls_by_group": calls_by_group, "pending": pending}
+
+
+@app.get("/api/campaigns/{cid}/compare")
+def compare_campaign(
+    cid: int,
+    # Query(...) décrit un paramètre d'adresse (?threshold=0.3) et ses bornes : FastAPI renvoie
+    # une erreur 422 tout seul si la valeur sort des bornes.
+    # Seuil : pas en dessous du seuil d'analyse (0,1), car les cris plus faibles ne sont pas gardés en base.
+    threshold: float = Query(detection.DEFAULT_THRESHOLD, ge=detection.ANALYSIS_THRESHOLD, lt=1),
+    window: float = Query(analysis.CONTACT_WINDOW, ge=1, le=60),   # largeur d'une tranche de contact (s)
+    h_start: Optional[float] = Query(None, ge=0, lt=24),          # début de la plage horaire (21.5 = 21 h 30)
+    h_end: Optional[float] = Query(None, ge=0, lt=24),            # fin de la plage horaire
+):
+    """
+    Données de la page « Comparer » : une ligne par site × nuit, recalculée avec les réglages choisis
+    (seuil de score, largeur des tranches de contact, plage horaire de la nuit).
+    Le choix des sites, des nuits, du groupe et de la moyenne se fait ensuite dans le navigateur.
+    """
+    # La plage horaire n'a de sens qu'avec ses deux bornes, et dans le bon ordre une fois rangées
+    # sur la nuit (21 h → 6 h est valable, 6 h → 21 h ne l'est pas : ce serait le jour).
+    hours = None
+    if (h_start is None) != (h_end is None):
+        raise HTTPException(422, "Il faut donner le début ET la fin de la plage horaire")
+    if h_start is not None:
+        a, b = compare.night_window("2000-01-01", h_start, h_end)
+        if a >= b:
+            raise HTTPException(422, "La plage horaire doit aller du soir vers le matin (ex. 21 h → 6 h)")
+        hours = (h_start, h_end)
+
+    with get_conn() as c:
+        _campaign_or_404(c, cid)
+        sites = [_row(s) for s in c.execute("SELECT * FROM sites WHERE campaign_id=? ORDER BY is_control, id", (cid,))]
+        recs = [_row(r) for r in c.execute(
+            "SELECT id, site_id, phase, night, recorded_at, duration FROM recordings WHERE campaign_id=? AND status='done'",
+            (cid,))]
+        # Tous les cris des fichiers analysés au-dessus du seuil choisi (JOIN : on relie chaque cri à son fichier)
+        calls = [_row(k) for k in c.execute(
+            """SELECT k.recording_id, k.start_time, k.grp, k.det_prob
+               FROM calls k JOIN recordings r ON r.id=k.recording_id
+               WHERE r.campaign_id=? AND r.status='done' AND k.det_prob>?""",
+            (cid, threshold))]
+        pending = c.execute(
+            "SELECT COUNT(*) FROM recordings WHERE campaign_id=? AND status IN ('pending','processing')", (cid,)
+        ).fetchone()[0]
+
+    result = compare.site_nights(recs, calls, threshold, window, hours)
+    return {
+        "params": {"threshold": threshold, "window": window, "h_start": h_start, "h_end": h_end},
+        "sites": sites,
+        "groups": sorted({g for row in result["rows"] for g in row["by_group"]}),
+        "pending": pending,
+        **result,
+    }
 
 
 # ---------- 5. Interface web (frontend compilé) ----------

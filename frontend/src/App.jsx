@@ -10,6 +10,7 @@ import { Link, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Campaign from './pages/Campaign'
 import Campaigns from './pages/Campaigns'
+import Compare from './pages/Compare'
 import Doc from './pages/Doc'
 import Recording from './pages/Recording'
 
@@ -29,6 +30,8 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Campaigns />} />
         <Route path="/campaigns/:id" element={<Campaign />} />
+        {/* Page « Comparer » d'une campagne : réglages et comparaison avant / pendant / après */}
+        <Route path="/campaigns/:id/comparer" element={<Compare />} />
         <Route path="/recordings/:id" element={<Recording />} />
         <Route path="/doc" element={<Doc />} />
         <Route path="*" element={<NotFound />} />
