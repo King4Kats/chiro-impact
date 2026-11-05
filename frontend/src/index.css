@@ -2,13 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Couleurs des deux thèmes, en « R G B » pour que Tailwind puisse ajouter la transparence (bg-slate/50…) */
+@layer base {
+  :root {
+    --c-ink: 68 64 90;          /* #44405a, ardoise Lagom */
+    --c-ink-soft: 122 119 144;
+    --c-brand: 68 64 90;
+    --c-surface: 255 255 255;
+    --c-page: 247 248 247;
+    --c-line: 230 232 230;
+    --c-green-soft: 234 245 238;
+    color-scheme: light;
+  }
+  :root.dark {
+    --c-ink: 232 230 240;
+    --c-ink-soft: 163 160 182;
+    --c-brand: 98 93 128;
+    --c-surface: 34 32 45;
+    --c-page: 24 22 32;
+    --c-line: 58 55 75;
+    --c-green-soft: 36 58 46;
+    color-scheme: dark;         /* listes déroulantes, curseurs et barres de défilement en sombre */
+  }
+}
+
 /* Petits composants réutilisables, définis une fois ici */
 @layer components {
-  .card { @apply bg-white border border-line rounded; }
-  .btn { @apply inline-flex items-center gap-2 px-4 py-2 rounded-sm font-medium text-white bg-slate hover:bg-slate/90 disabled:opacity-50 disabled:cursor-not-allowed transition; }
+  .card { @apply bg-surface border border-line rounded; }
+  .btn { @apply inline-flex items-center gap-2 px-4 py-2 rounded-sm font-medium text-white bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition; }
   .btn-green { @apply bg-green-dark hover:bg-green-dark/90; }
   .btn-ghost { @apply bg-transparent text-slate border border-line hover:bg-green-soft; }
-  .input { @apply w-full px-3 py-2 border border-line rounded bg-white focus:outline-none focus:ring-2 focus:ring-green; }
+  .input { @apply w-full px-3 py-2 border border-line rounded bg-surface focus:outline-none focus:ring-2 focus:ring-green; }
   .label { @apply block text-sm font-medium text-slate-light mb-1; }
   .th { @apply text-left text-xs uppercase tracking-wide text-slate-light font-medium px-3 py-2 border-b border-line whitespace-nowrap; }
   .td { @apply px-3 py-2 border-b border-line tabular-nums whitespace-nowrap; }

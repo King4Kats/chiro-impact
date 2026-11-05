@@ -427,11 +427,12 @@ def _wav_path_or_410(rec) -> str:
 
 @app.get("/api/recordings/{rid}/spectrogram.png")
 def spectrogram(rid: int, t0: float = 0.0, t1: Optional[float] = None, min_prob: float = 0.0, hl: Optional[int] = None,
-                w: int = 1200, h: int = 360, dpr: float = 1.0):
+                w: int = 1200, h: int = 360, dpr: float = 1.0, theme: str = "light"):
     """
     Image PNG du spectrogramme entre t0 et t1 (5 s max) avec les boîtes des cris dont det_prob >= min_prob.
     hl = id d'un cri à surligner en jaune.
     w, h = taille d'affichage en pixels CSS (bornées), dpr = densité de l'écran (1 à 3).
+    theme = "light" (fond blanc, cris en noir) ou "dark" (fond sombre, cris en clair).
     """
     dpr = min(max(dpr, 1.0), 3.0)
     w = min(max(w, 280), 3000)
@@ -444,7 +445,8 @@ def spectrogram(rid: int, t0: float = 0.0, t1: Optional[float] = None, min_prob:
             "SELECT * FROM calls WHERE recording_id=? AND det_prob>? AND end_time>=? AND start_time<=?",
             (rid, min_prob, t0, (t1 if t1 is not None else t0 + spectro.MAX_SPAN)),
         )]
-    png = spectro.render(_wav_path_or_410(rec), calls, t0=max(t0, 0.0), t1=t1, highlight=hl, width=w, height=h, dpr=dpr)
+    png = spectro.render(_wav_path_or_410(rec), calls, t0=max(t0, 0.0), t1=t1, highlight=hl, width=w, height=h, dpr=dpr,
+                         dark=(theme == "dark"))
     # L'image d'une fenêtre ne change pas tant que les détections ne changent pas : le navigateur peut la garder
     return Response(content=png, media_type="image/png", headers={"Cache-Control": "private, max-age=300"})
 

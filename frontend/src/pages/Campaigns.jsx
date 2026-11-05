@@ -36,7 +36,7 @@ export default function Campaigns() {
           Campagnes
           <Help text="Une campagne = un festival + une édition (ex. « Dub Camp 2027 »). Elle regroupe les sites d'enregistrement et tous les fichiers audio des phases avant, pendant et après." />
         </h2>
-        {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+        {error && <p className="text-red-600 dark:text-red-400 text-sm mb-2">{error}</p>}
         {list.length === 0 && (
           <div className="card p-6 text-slate-light">
             Aucune campagne pour l'instant. Crée la première avec le formulaire à droite.

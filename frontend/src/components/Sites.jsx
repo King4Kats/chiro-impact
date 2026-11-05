@@ -40,7 +40,7 @@ export default function Sites({ campaign, onChange }) {
           Site témoin (hors festival)
         </label>
         <button className="btn btn-ghost justify-center" type="submit">Ajouter le site</button>
-        {error && <p className="text-xs text-red-600">{error}</p>}
+        {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
       </form>
     </div>
   )
@@ -52,8 +52,8 @@ function RemoveSite({ site, onDone }) {
   if (!confirm) return <button className="text-xs text-slate-light hover:text-red-600 py-1" onClick={() => setConfirm(true)}>retirer</button>
   return (
     <span className="text-xs inline-flex items-center gap-2">
-      <span className="text-red-700">Effacer le site et ses fichiers ?</span>
-      <button className="text-red-600 font-medium py-1" onClick={() => api.deleteSite(site.id).then(onDone)}>oui</button>
+      <span className="text-red-700 dark:text-red-300">Effacer le site et ses fichiers ?</span>
+      <button className="text-red-600 dark:text-red-400 font-medium py-1" onClick={() => api.deleteSite(site.id).then(onDone)}>oui</button>
       <button className="text-slate-light py-1" onClick={() => setConfirm(false)}>non</button>
     </span>
   )

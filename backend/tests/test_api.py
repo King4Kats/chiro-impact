@@ -161,6 +161,10 @@ def test_spectrogramme(client, campagne):
     # L'image est dessinée à la taille demandée × densité de l'écran (largeur, hauteur dans l'en-tête PNG)
     png = client.get(f"/api/recordings/{rid}/spectrogram.png?w=400&h=200&dpr=2").content
     assert struct.unpack(">II", png[16:24]) == (800, 400)
+    # Thème sombre de l'interface : même image, couleurs différentes
+    sombre = client.get(f"/api/recordings/{rid}/spectrogram.png?w=400&h=200&dpr=2&theme=dark").content
+    assert sombre[:8] == b"\x89PNG\r\n\x1a\n" and struct.unpack(">II", sombre[16:24]) == (800, 400)
+    assert sombre != png
 
 
 def test_ecoute_ralentie(client, campagne):

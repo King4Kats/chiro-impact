@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api, phaseLabel } from '../api'
 import Help from '../components/Help'
 import { fmtDate, fmtDur } from './Campaign'
+import { useTheme } from '../theme'
 
 const ZOOMS = [0.5, 1, 2, 5]   // largeurs de fenêtre proposées, en secondes (5 s = maximum du serveur)
 const DEFAULT_ZOOM = 1         // 1 s : les cris (3 à 50 ms) restent lisibles
@@ -20,6 +21,7 @@ export default function Recording() {
   const [zoom, setZoom] = useState(DEFAULT_ZOOM)
   const [selected, setSelected] = useState(null) // id du cri cliqué (surligné partout)
   const [full, setFull] = useState(false)        // spectrogramme en plein écran
+  const { theme } = useTheme()                    // le spectrogramme suit le thème clair / sombre
   const specCard = useRef(null)
 
   const load = useCallback(() => {
@@ -112,7 +114,7 @@ export default function Recording() {
     return () => window.removeEventListener('keydown', onKey)
   }, [t0, span, zoom, full, clampT0, changeZoom, toggleFull])
 
-  if (error) return <p className="text-red-600">{error}</p>
+  if (error) return <p className="text-red-600 dark:text-red-400">{error}</p>
   if (!rec) return <p className="text-slate-light">Chargement…</p>
 
   // Clic sur un cri : on zoome à 0,5 s et on centre la fenêtre dessus
@@ -138,7 +140,7 @@ export default function Recording() {
         <p className="text-slate-light text-sm">
           {rec.site_name}{rec.is_control ? ' (témoin)' : ''} · phase <b className="text-slate font-medium">{phaseLabel(rec.phase)}</b>
           {rec.recorded_at && <> · {fmtDate(rec.recorded_at)}{rec.time_source === 'nom du fichier'
-            ? <span className="text-orange-600" title="Heure lue dans le nom du fichier : son fuseau est inconnu. L'AudioMoth nomme ses fichiers en UTC par défaut (2 h de moins que l'heure française en été)."> (heure du nom de fichier, fuseau non vérifié)</span>
+            ? <span className="text-orange-600 dark:text-orange-400" title="Heure lue dans le nom du fichier : son fuseau est inconnu. L'AudioMoth nomme ses fichiers en UTC par défaut (2 h de moins que l'heure française en été)."> (heure du nom de fichier, fuseau non vérifié)</span>
             : <span title={`Heure lue dans le fichier (${rec.time_source}), convertie en heure française`}> (heure française)</span>}</>}
           {' · '}{fmtDur(rec.duration)}{rec.samplerate ? ` · ${rec.samplerate / 1000} kHz` : ''}
         </p>
@@ -146,7 +148,7 @@ export default function Recording() {
 
       {working && <p className="text-sm bg-yellow/20 px-3 py-2 rounded-sm">Analyse en cours{rec.progress > 0 ? ` (${Math.round(rec.progress * 100)} %)` : ''}… la page se mettra à jour toute seule.</p>}
       {rec.status === 'error' && (
-        <div className="text-sm bg-red-50 text-red-700 px-3 py-2 rounded-sm flex flex-wrap items-center gap-3">
+        <div className="text-sm bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-3 py-2 rounded-sm flex flex-wrap items-center gap-3">
           <span className="flex-1 min-w-0 break-words">L’analyse a échoué : {rec.error || 'erreur inconnue'}</span>
           <button className="btn btn-ghost" onClick={() => api.reprocess(rec.id).then(load)}>Relancer l’analyse</button>
         </div>
@@ -167,7 +169,7 @@ export default function Recording() {
       {/* Spectrogramme (normal ou plein écran) */}
       <div ref={specCard}
         className={full
-          ? 'fixed inset-0 z-50 bg-white flex flex-col gap-2 p-2 sm:p-4'
+          ? 'fixed inset-0 z-50 bg-surface flex flex-col gap-2 p-2 sm:p-4'
           : 'card p-2 sm:p-3 flex flex-col gap-2'}>
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-bold flex items-center gap-2 mr-auto">
@@ -198,7 +200,7 @@ export default function Recording() {
             <div className="inline-flex border border-line rounded-sm overflow-hidden" role="group" aria-label="Zoom">
               {ZOOMS.filter((z) => z <= Math.max(duration, ZOOMS[0])).map((z) => (
                 <button key={z} onClick={() => changeZoom(z)} aria-pressed={zoom === z}
-                  className={`px-2.5 py-1 text-sm tabular-nums border-l first:border-l-0 border-line ${zoom === z ? 'bg-green-dark text-white' : 'bg-white hover:bg-green-soft'}`}>
+                  className={`px-2.5 py-1 text-sm tabular-nums border-l first:border-l-0 border-line ${zoom === z ? 'bg-green-dark text-white' : 'bg-surface hover:bg-green-soft'}`}>
                   {String(z).replace('.', ',')} s
                 </button>
               ))}
@@ -209,7 +211,7 @@ export default function Recording() {
 
         {rec.status === 'done' ? (
           <Spectrogram full={full}
-            url={(size) => api.spectrogramUrl(rec.id, t0.toFixed(3), t1.toFixed(3), imgThr, selected, size)}
+            url={(size) => api.spectrogramUrl(rec.id, t0.toFixed(3), t1.toFixed(3), imgThr, selected, size, theme)}
             alt={`Spectrogramme de ${rec.filename} entre ${t0.toFixed(2)} et ${t1.toFixed(2)} s`} />
         ) : (
           <div className="h-48 grid place-items-center text-slate-light text-sm bg-page rounded">Le spectrogramme apparaîtra une fois l’analyse terminée.</div>
@@ -230,7 +232,7 @@ export default function Recording() {
       {calls.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {Object.entries(species).sort((a, b) => b[1] - a[1]).map(([s, n]) => (
-            <span key={s} className="text-sm border border-line rounded-sm px-2.5 py-1 bg-white">
+            <span key={s} className="text-sm border border-line rounded-sm px-2.5 py-1 bg-surface">
               <i>{s}</i> <b className="text-green-dark">{n}</b>
             </span>
           ))}
@@ -246,7 +248,7 @@ export default function Recording() {
             <CallsCards calls={calls} selected={selected} t0={t0} t1={t1} onPick={focusCall} />
           </>}
 
-      <p className="text-sm border-l-4 border-yellow bg-white px-4 py-3 rounded-r max-w-3xl">
+      <p className="text-sm border-l-4 border-yellow bg-surface px-4 py-3 rounded-r max-w-3xl">
         Touche un cri dans la liste pour zoomer dessus dans le spectrogramme. L’analyse garde les cris dont le score dépasse 0,1 ;
         le curseur ne fait que masquer ceux sous la valeur choisie. Les chiffres de la campagne sont toujours calculés à 0,3.
       </p>
@@ -319,8 +321,8 @@ function Spectrogram({ url, alt, full }) {
       style={full ? undefined : { height: size ? size.h : 280 }}>
       {src && <img src={src} alt={alt} className="absolute inset-0 w-full h-full object-fill"
         onLoad={() => setLoaded(src)} onError={() => { setLoaded(src); setFailed(true) }} />}
-      {loading && <div className="absolute inset-0 bg-white/50 grid place-items-center text-sm text-slate-light">Calcul du spectrogramme…</div>}
-      {failed && <div className="absolute inset-0 grid place-items-center text-sm text-red-700">Impossible de générer le spectrogramme.</div>}
+      {loading && <div className="absolute inset-0 bg-surface/50 grid place-items-center text-sm text-slate-light">Calcul du spectrogramme…</div>}
+      {failed && <div className="absolute inset-0 grid place-items-center text-sm text-red-700 dark:text-red-300">Impossible de générer le spectrogramme.</div>}
     </div>
   )
 }
@@ -375,7 +377,7 @@ function CallsTable({ calls, selected, t0, t1, onPick }) {
   return (
     <div ref={box} className="hidden md:block card overflow-auto max-h-[36rem]">
       <table className="w-full text-sm">
-        <thead className="sticky top-0 bg-white z-10">
+        <thead className="sticky top-0 bg-surface z-10">
           <tr>
             {COLS.map(([label, help, align]) => (
               <th key={label} className={`th !whitespace-normal align-bottom ${align === 'r' ? 'text-right' : ''}`}>
@@ -402,7 +404,7 @@ function CallsTable({ calls, selected, t0, t1, onPick }) {
                 <td className="td text-right">{(c.high_freq / 1000).toFixed(1)}</td>
                 <td className="td"><i>{c.species}</i></td>
                 <td className="td">{c.grp}</td>
-                <td className={`td text-right ${low ? 'text-orange-600' : ''}`}><Bar p={c.det_prob} />{c.det_prob.toFixed(3)}</td>
+                <td className={`td text-right ${low ? 'text-orange-600 dark:text-orange-400' : ''}`}><Bar p={c.det_prob} />{c.det_prob.toFixed(3)}</td>
                 <td className="td text-right">{c.class_prob.toFixed(3)}</td>
               </tr>
             )
@@ -437,7 +439,7 @@ function CallsCards({ calls, selected, t0, t1, onPick }) {
                 </span>
                 <span className="flex items-center gap-2 text-sm pl-9">
                   <span className="flex-1 min-w-0 truncate"><i>{c.species}</i> <span className="text-slate-light text-xs">{Math.round(c.class_prob * 100)} %</span></span>
-                  <span className={`tabular-nums text-xs whitespace-nowrap ${low ? 'text-orange-600' : ''}`}><Bar p={c.det_prob} />{c.det_prob.toFixed(2)}</span>
+                  <span className={`tabular-nums text-xs whitespace-nowrap ${low ? 'text-orange-600 dark:text-orange-400' : ''}`}><Bar p={c.det_prob} />{c.det_prob.toFixed(2)}</span>
                 </span>
               </button>
             </li>

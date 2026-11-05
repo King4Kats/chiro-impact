@@ -21,10 +21,15 @@ GREEN = "#5aa876"
 ORANGE = "#e8892f"   # cri à vérifier (confiance < 0,5), même code couleur que le tableau
 YELLOW = "#fbcf38"   # cri sélectionné dans l'interface
 SLATE = "#44405a"
-plt.rcParams.update({
-    "axes.edgecolor": SLATE, "axes.labelcolor": SLATE, "xtick.color": SLATE, "ytick.color": SLATE,
-    "font.size": 9,
-})
+plt.rcParams.update({"font.size": 9})
+
+# Deux thèmes, comme l'interface. Clair : fond blanc, cris en noir (le rendu d'origine).
+# Sombre : la même échelle inversée, du fond de l'interface sombre vers le blanc.
+from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
+THEMES = {
+    False: {"cmap": "Greys", "bg": "white", "ink": SLATE},
+    True: {"cmap": LinearSegmentedColormap.from_list("chiro_dark", ["#22202d", "#ffffff"]), "bg": "#22202d", "ink": "#c9c6d8"},
+}
 
 MAX_SPAN = 5.0        # secondes affichées au plus (au-delà l'image devient illisible et lente)
 MAX_AUDIO_SPAN = 10.0  # secondes d'audio au plus par extrait (×10 = 100 s d'écoute)
@@ -64,7 +69,8 @@ def _spectrogram_db(y: np.ndarray, sr: int) -> np.ndarray:
 
 
 def render(path: str, calls: list[dict], t0: float = 0.0, t1: Optional[float] = None,
-           highlight: Optional[int] = None, width: int = 1200, height: int = 360, dpr: float = 1.0) -> bytes:
+           highlight: Optional[int] = None, width: int = 1200, height: int = 360, dpr: float = 1.0,
+           dark: bool = False) -> bytes:
     """
     Dessine le spectrogramme de [t0, t1] (au plus MAX_SPAN secondes) et entoure chaque cri de `calls`
     qui tombe dans la fenêtre. `highlight` = id d'un cri à mettre en évidence. Renvoie les octets PNG.
@@ -72,7 +78,9 @@ def render(path: str, calls: list[dict], t0: float = 0.0, t1: Optional[float] = 
     width / height = taille d'affichage à l'écran (pixels CSS), dpr = densité de l'écran (2 sur un
     téléphone récent). L'image est dessinée à la taille exacte où elle sera vue : le texte des axes
     reste lisible sur un téléphone comme en plein écran sur un grand moniteur.
+    dark = True : version pour le thème sombre de l'interface (mêmes données, couleurs inversées).
     """
+    th = THEMES[bool(dark)]
     if t1 is None or t1 <= t0:
         t1 = t0 + MAX_SPAN
     t1 = min(t1, t0 + MAX_SPAN)
@@ -82,7 +90,12 @@ def render(path: str, calls: list[dict], t0: float = 0.0, t1: Optional[float] = 
     top = min(sr / 2, F_MAX)
 
     fig, ax = plt.subplots(figsize=(width / 100, height / 100), dpi=100 * dpr)
-    ax.imshow(D, origin="lower", aspect="auto", cmap="Greys", vmin=-55, vmax=0,  # même contraste que la v0.1
+    for spine in ax.spines.values():
+        spine.set_color(th["ink"])
+    ax.tick_params(colors=th["ink"])
+    ax.xaxis.label.set_color(th["ink"])
+    ax.yaxis.label.set_color(th["ink"])
+    ax.imshow(D, origin="lower", aspect="auto", cmap=th["cmap"], vmin=-55, vmax=0,  # même contraste que la v0.1
               extent=(0, span, 0, sr / 2), interpolation="antialiased")
     ax.set_ylim(F_MIN, top)
     ticks = list(range(20_000, int(top) + 1, 20_000))
@@ -109,7 +122,7 @@ def render(path: str, calls: list[dict], t0: float = 0.0, t1: Optional[float] = 
     ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(nbins=max(3, width // 90)))
     fig.tight_layout(pad=0.4)
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", facecolor="white")
+    fig.savefig(buf, format="png", facecolor=th["bg"])
     plt.close(fig)
     return buf.getvalue()
 

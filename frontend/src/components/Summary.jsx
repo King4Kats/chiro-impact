@@ -1,17 +1,27 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { PHASES } from '../api'
 import Help from './Help'
+import { useTheme } from '../theme'
 
 // Couleurs des groupes dans le graphique de diversité (teintes douces, lisibles sur blanc)
 const GROUP_COLORS = {
   'Pipistrelles': '#80c595', 'Myotis': '#5b8def', 'Noctules / Sérotines': '#f0a35e',
   'Oreillards': '#b48fd9', 'Barbastelle': '#44405a', 'Rhinolophes': '#e46a6a', 'Autre': '#b8b5c4',
 }
+// Couleurs des axes et du quadrillage, selon le thème clair / sombre (recharts dessine en SVG)
+const CHART = {
+  light: { grid: '#e6e8e6', axis: '#44405a', axisSoft: '#7a7790', tipBg: '#ffffff', tipLine: '#e6e8e6', barbastelle: '#44405a' },
+  dark: { grid: '#3a374b', axis: '#e8e6f0', axisSoft: '#a3a0b6', tipBg: '#22202d', tipLine: '#3a374b', barbastelle: '#a7a2c4' },
+}
 
 // Synthèse d'une campagne. Design BACI : les sites du festival et le site témoin sont TOUJOURS
 // présentés séparément (les mélanger ferait disparaître l'effet qu'on cherche à mesurer).
 export default function Summary({ summary }) {
+  const { theme } = useTheme()
   if (!summary) return null
+  const C = CHART[theme]
+  const colorOf = (g) => (g === 'Barbastelle' ? C.barbastelle : GROUP_COLORS[g] || GROUP_COLORS.Autre)
+  const tooltip = { contentStyle: { background: C.tipBg, borderColor: C.tipLine, borderRadius: 6 }, labelStyle: { color: C.axis }, cursor: { fill: C.grid, opacity: 0.5 } }
   const { by_type, sites, calls_by_group, pending } = summary
   const hasControl = sites.some((s) => s.site.is_control)
   const hasImpact = sites.some((s) => !s.site.is_control)
@@ -52,10 +62,10 @@ export default function Summary({ summary }) {
           <div className="h-56">
             <ResponsiveContainer>
               <BarChart data={activity} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="#e6e8e6" vertical={false} />
-                <XAxis dataKey="phase" tick={{ fill: '#44405a', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#7a7790', fontSize: 11 }} width={40} />
-                <Tooltip formatter={(v, name) => [v == null ? 'pas de données' : `${v} contacts/h`, name]} />
+                <CartesianGrid stroke={C.grid} vertical={false} />
+                <XAxis dataKey="phase" tick={{ fill: C.axis, fontSize: 12 }} stroke={C.axisSoft} />
+                <YAxis tick={{ fill: C.axisSoft, fontSize: 11 }} stroke={C.axisSoft} width={40} />
+                <Tooltip {...tooltip} formatter={(v, name) => [v == null ? 'pas de données' : `${v} contacts/h`, name]} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 {hasImpact && <Bar dataKey="festival" name="Festival" fill="#5aa876" radius={[3, 3, 0, 0]} />}
                 {hasControl && <Bar dataKey="temoin" name="Témoin" fill="#fbcf38" radius={[3, 3, 0, 0]} />}
@@ -71,12 +81,12 @@ export default function Summary({ summary }) {
           <div className="h-56">
             <ResponsiveContainer>
               <BarChart data={diversity} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="#e6e8e6" vertical={false} />
-                <XAxis dataKey="phase" tick={{ fill: '#44405a', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#7a7790', fontSize: 11 }} width={40} />
-                <Tooltip />
+                <CartesianGrid stroke={C.grid} vertical={false} />
+                <XAxis dataKey="phase" tick={{ fill: C.axis, fontSize: 12 }} stroke={C.axisSoft} />
+                <YAxis tick={{ fill: C.axisSoft, fontSize: 11 }} stroke={C.axisSoft} width={40} />
+                <Tooltip {...tooltip} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                {groups.map((g) => <Bar key={g} dataKey={g} stackId="a" fill={GROUP_COLORS[g] || GROUP_COLORS.Autre} />)}
+                {groups.map((g) => <Bar key={g} dataKey={g} stackId="a" fill={colorOf(g)} />)}
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -164,7 +174,7 @@ function PhaseRow({ title, kind, data, help }) {
               <div className="text-[11px] uppercase tracking-wide text-slate-light">{p.label}</div>
               <div className="text-xl sm:text-2xl font-bold tabular-nums leading-tight">{v ?? '–'}</div>
               <div className="text-[11px] text-slate-light">contacts/h</div>
-              {delta != null && <div className={`text-xs font-medium tabular-nums ${delta < 0 ? 'text-orange-600' : 'text-green-dark'}`}>{delta > 0 ? '+' : ''}{delta} % vs avant</div>}
+              {delta != null && <div className={`text-xs font-medium tabular-nums ${delta < 0 ? 'text-orange-600 dark:text-orange-400' : 'text-green-dark'}`}>{delta > 0 ? '+' : ''}{delta} % vs avant</div>}
               <div className="text-[11px] text-slate-light mt-0.5">{s.n_recordings} fich. · {fmtHours(s.hours)} · {s.n_groups} grp</div>
             </div>
           )

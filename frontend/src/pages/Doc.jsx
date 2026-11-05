@@ -100,7 +100,7 @@ export default function Doc() {
       <div className="card p-4 flex flex-wrap items-stretch gap-2" aria-label="Schéma de la chaîne de traitement">
         {CHAIN.map(([t, s], i) => (
           <div key={t} className="flex items-center gap-2">
-            <div className={`rounded-sm border px-3 py-2 text-center min-w-[7rem] ${i === CHAIN.length - 1 ? 'bg-green-soft border-green' : 'bg-white border-line'}`}>
+            <div className={`rounded-sm border px-3 py-2 text-center min-w-[7rem] ${i === CHAIN.length - 1 ? 'bg-green-soft border-green' : 'bg-surface border-line'}`}>
               <div className="font-medium text-sm">{t}</div>
               <div className="text-xs text-slate-light">{s}</div>
             </div>

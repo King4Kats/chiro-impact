@@ -34,7 +34,7 @@ export default function Campaign() {
     return () => clearInterval(t)
   }, [working, load])
 
-  if (error) return <p className="text-red-600">{error}</p>
+  if (error) return <p className="text-red-600 dark:text-red-400">{error}</p>
   if (!camp) return <p className="text-slate-light">Chargement…</p>
 
   const hasDates = Boolean(camp.festival_start && camp.festival_end)
@@ -78,7 +78,7 @@ const STATUS = {
   pending: ['En attente', 'bg-line text-slate-light'],
   processing: ['Analyse…', 'bg-yellow/30 text-slate'],
   done: ['Analysé', 'bg-green-soft text-green-dark'],
-  error: ['Erreur', 'bg-red-100 text-red-700'],
+  error: ['Erreur', 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'],
 }
 
 function statusOf(r) {
@@ -180,7 +180,7 @@ function RecordingCard({ r, hasDates, onChange, odd }) {
 function PhaseSelect({ r, hasDates, onChange }) {
   return (
     <span className="inline-flex items-center gap-1">
-      <select className="border border-line rounded-sm bg-white text-xs px-1.5 py-1" aria-label={`Phase de ${r.filename}`}
+      <select className="border border-line rounded-sm bg-surface text-xs px-1.5 py-1" aria-label={`Phase de ${r.filename}`}
         value={r.phase} onChange={(e) => api.updateRecording(r.id, { phase: e.target.value }).then(onChange)}>
         {PHASES.map((ph) => <option key={ph.key} value={ph.key}>{ph.label}</option>)}
         {hasDates && <option value="auto">↻ recalculer (auto)</option>}
@@ -196,7 +196,7 @@ function Actions({ r, onChange }) {
     <span className="inline-flex items-center gap-3 text-xs whitespace-nowrap">
       {r.status === 'error' && <button className="text-slate-light hover:text-slate py-1" onClick={() => api.reprocess(r.id).then(onChange)}>relancer</button>}
       {confirm
-        ? <button className="text-red-600 font-medium py-1" onClick={() => api.deleteRecording(r.id).then(onChange)} onBlur={() => setConfirm(false)} autoFocus>confirmer ?</button>
+        ? <button className="text-red-600 dark:text-red-400 font-medium py-1" onClick={() => api.deleteRecording(r.id).then(onChange)} onBlur={() => setConfirm(false)} autoFocus>confirmer ?</button>
         : <button className="text-slate-light hover:text-red-600 py-1" onClick={() => setConfirm(true)}>supprimer</button>}
     </span>
   )
@@ -205,7 +205,7 @@ function Actions({ r, onChange }) {
 // Petit repère quand l'heure vient du nom du fichier (fuseau inconnu : UTC par défaut sur AudioMoth)
 function TzMark({ r }) {
   if (r.time_source !== 'nom du fichier') return null
-  return <span className="text-orange-600" title="Heure lue dans le nom du fichier : fuseau inconnu (l'AudioMoth nomme ses fichiers en UTC par défaut)"> ⚠ fuseau ?</span>
+  return <span className="text-orange-600 dark:text-orange-400" title="Heure lue dans le nom du fichier : fuseau inconnu (l'AudioMoth nomme ses fichiers en UTC par défaut)"> ⚠ fuseau ?</span>
 }
 
 export function fmtDur(s) {

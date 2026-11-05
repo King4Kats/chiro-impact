@@ -56,9 +56,9 @@ export const api = {
   },
   // minProb : seuls les cris au-dessus de ce seuil sont entourés ; hl : id du cri surligné en jaune
   // size : { w, h, dpr } = taille d'affichage (pixels CSS) et densité de l'écran → image nette partout
-  spectrogramUrl: (id, t0 = 0, t1, minProb = 0, hl, size) =>
+  spectrogramUrl: (id, t0 = 0, t1, minProb = 0, hl, size, theme = 'light') =>
     `${BASE}/recordings/${id}/spectrogram.png?t0=${t0}${t1 != null ? `&t1=${t1}` : ''}&min_prob=${minProb}` +
-    `${hl != null ? `&hl=${hl}` : ''}${size ? `&w=${size.w}&h=${size.h}&dpr=${size.dpr}` : ''}`,
+    `${hl != null ? `&hl=${hl}` : ''}${size ? `&w=${size.w}&h=${size.h}&dpr=${size.dpr}` : ''}${theme === 'dark' ? '&theme=dark' : ''}`,
   // Extrait sonore ralenti (×10) : les ultrasons deviennent audibles
   audioUrl: (id, t0, t1, slow = 10) => `${BASE}/recordings/${id}/audio.wav?t0=${t0}&t1=${t1}&slow=${slow}`,
 

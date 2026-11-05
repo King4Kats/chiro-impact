@@ -271,6 +271,15 @@ Il a aussi demandé une mise en ligne temporaire.
   - export par nuit et statistique BACI ;
   - contacts par groupe ;
   - validation manuelle des cris ;
-  - premier commit ;
   - sauvegarde des données en ligne ;
   - licence BatDetect2 CC BY-NC à garder en tête si l'étude est rémunérée.
+
+## 2026-11-05 (soir) — Premier commit + thème clair / sombre
+
+- **Premier commit** (`main`) : tout le projet, sans `deploy/.env` ni les données.
+- **Thème clair et sombre** :
+  - par défaut, l'interface suit le réglage de l'ordinateur ou du téléphone ;
+  - sélecteur à 3 positions dans l'en-tête (Auto ◐ / Clair ☀ / Sombre ☾), mémorisé dans le navigateur ;
+  - couleurs centralisées en variables CSS (`src/index.css`), mêmes noms de classes Tailwind ;
+  - graphiques de la synthèse et spectrogramme (paramètre `theme=dark`) adaptés ;
+  - pas de flash blanc au chargement (script dans `index.html`).

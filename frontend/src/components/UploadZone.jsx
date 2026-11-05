@@ -46,7 +46,7 @@ export default function UploadZone({ campaign, onUploaded }) {
   const noSite = campaign.sites.length === 0
   const phaseBtn = (key, label, disabled = false) => (
     <button key={key} type="button" onClick={() => setPhase(key)} disabled={disabled}
-      className={`flex-1 py-2 rounded-sm border text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed ${phase === key ? 'bg-green-dark text-white border-green-dark' : 'bg-white border-line hover:bg-green-soft'}`}>
+      className={`flex-1 py-2 rounded-sm border text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed ${phase === key ? 'bg-green-dark text-white border-green-dark' : 'bg-surface border-line hover:bg-green-soft'}`}>
       {label}
     </button>
   )

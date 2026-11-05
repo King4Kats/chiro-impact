@@ -64,7 +64,7 @@ export default function Help({ text, className = '', align }) {
         onPointerLeave={(e) => e.pointerType === 'mouse' && !pinned && setOpen(false)}
         onFocus={() => setOpen(true)}
         onBlur={() => !pinned && setOpen(false)}
-        className="w-[18px] h-[18px] shrink-0 rounded-full border-[1.5px] border-green text-green-dark text-[11px] font-bold leading-none inline-flex items-center justify-center bg-white cursor-help hover:bg-green-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
+        className="w-[18px] h-[18px] shrink-0 rounded-full border-[1.5px] border-green text-green-dark text-[11px] font-bold leading-none inline-flex items-center justify-center bg-surface cursor-help hover:bg-green-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-green"
       >
         ?
       </button>
@@ -74,7 +74,7 @@ export default function Help({ text, className = '', align }) {
           id={id}
           role="tooltip"
           style={pos ? { left: pos.left, top: pos.top, width: pos.width } : { left: -9999, top: 0, width: WIDTH }}
-          className="fixed z-[100] bg-slate text-white text-xs font-normal normal-case tracking-normal leading-relaxed p-3 rounded shadow-lg text-left whitespace-normal"
+          className="fixed z-[100] bg-brand text-white text-xs font-normal normal-case tracking-normal leading-relaxed p-3 rounded shadow-lg text-left whitespace-normal"
         >
           {pos && (
             <span aria-hidden
