@@ -343,4 +343,5 @@ Détail complet dans [`docs/AUDIT.md`](docs/AUDIT.md). Les principales :
   Si l'étude est rémunérée (par exemple par l'organisateur du festival), demander l'accord des auteurs.
   À citer : Mac Aodha O. et al. (2022), *Towards a general approach for bat echolocation detection and
   classification*, bioRxiv, [doi:10.1101/2022.12.14.520490](https://doi.org/10.1101/2022.12.14.520490).
-- **Code propre à Chiro Impact** : licence à choisir par l'association.
+- **Code propre à Chiro Impact** : licence **MIT** (voir [`LICENSE`](LICENSE)). Elle ne couvre que ce code :
+  utiliser l'outil reste soumis à la licence de BatDetect2 ci-dessus.

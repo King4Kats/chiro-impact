@@ -1,0 +1,7 @@
+# Les scripts Windows (.bat) doivent garder des fins de ligne Windows (CRLF),
+# même si le dépôt est récupéré depuis Linux ou macOS : sinon cmd.exe peut mal les lire.
+*.bat text eol=crlf
+# Tout le reste : texte normalisé en LF dans le dépôt.
+* text=auto
+*.wav binary
+*.WAV binary
