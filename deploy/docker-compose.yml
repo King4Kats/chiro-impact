@@ -9,25 +9,53 @@
 #  Lancer (depuis le dossier qui contient Dockerfile) :
 #    docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 # ===========================================================================
+#
+#  Pour débuter :
+#  - docker compose lit ce fichier et crée tout ce qu'il décrit : conteneurs (services),
+#    réseaux et volumes. « up -d » démarre en arrière-plan, « --build » reconstruit
+#    l'image à partir du Dockerfile.
+#  - ${CHIRO_HOST} et ${CHIRO_AUTH} sont remplacés par les valeurs du fichier .env.
+#    Les secrets restent ainsi hors du dépôt git (deploy/.env est dans .gitignore).
+#  - Traefik est un « reverse proxy » déjà installé sur le serveur : il reçoit toutes les
+#    visites en HTTPS et les renvoie vers le bon conteneur. Il se configure par les
+#    « labels » posés sur nos conteneurs (voir plus bas).
+#  - Travaille avec : ../Dockerfile (construction de l'image), ../.dockerignore.
+
+# Nom du projet compose (préfixe des conteneurs, réseaux et volumes créés).
 name: chiro-impact
 
 services:
+  # Un seul service : l'appli complète (interface + serveur Python), voir le Dockerfile.
   app:
+    # context: .. = le dossier parent (racine du dépôt), car ce fichier est dans deploy/.
+    # image: nom donné à l'image construite.
     build:
       context: ..
       dockerfile: Dockerfile
     image: chiro-impact:latest
+    # Redémarre tout seul (plantage, redémarrage du serveur), sauf si on l'a arrêté à la main.
     restart: unless-stopped
     environment:
       # BatDetect2 n'utilise que 4 cœurs : le serveur reste disponible pour les autres services
       CHIRO_THREADS: "4"
+    # Volume nommé « data » monté sur /data : les données survivent à la reconstruction du conteneur.
     volumes:
       - data:/data            # base SQLite + fichiers WAV déposés
+    # Plafonds de ressources : au plus 4 processeurs et 6 Go de mémoire pour ce conteneur.
     cpus: 4
     mem_limit: 6g
     # Un seul réseau : celui de Traefik (déjà existant, en 172.30.x).
     # Pas de réseau propre à ce projet → pas de souci de sous-réseau 192.168.x sur ce serveur.
     networks: [traefik-proxy]
+    # Labels lus par Traefik. Vocabulaire :
+    #  - router « chiro » : règle qui dit QUELLES visites viennent ici (Host = le nom de domaine),
+    #    sur quel point d'entrée (https) et avec quel certificat ;
+    #  - certresolver=letsencrypt : Traefik obtient et renouvelle tout seul un certificat HTTPS
+    #    gratuit auprès de Let's Encrypt ;
+    #  - middleware « chiro-auth » : étape intercalée avant l'appli. Ici une « basic auth » :
+    #    le navigateur demande un identifiant et un mot de passe avant d'afficher quoi que ce soit ;
+    #  - service : vers quel port du conteneur envoyer les visites (8000 = uvicorn).
+    #  - traefik.docker.network : le réseau par lequel Traefik joint le conteneur.
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-proxy
@@ -39,9 +67,11 @@ services:
       - traefik.http.middlewares.chiro-auth.basicauth.users=${CHIRO_AUTH}
       - traefik.http.services.chiro.loadbalancer.server.port=8000
 
+# external: true = ce réseau existe déjà (créé avec Traefik) ; compose ne le crée ni ne le supprime.
 networks:
   traefik-proxy:
     external: true
 
+# Déclaration du volume nommé utilisé plus haut. {} = réglages par défaut (géré par Docker).
 volumes:
   data: {}

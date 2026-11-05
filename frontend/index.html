@@ -1,10 +1,31 @@
 <!doctype html>
+<!--
+  index.html — la seule page HTML de l'appli (une « single page application »).
+
+  Le navigateur charge ce fichier, puis le script src/main.jsx démarre React, qui dessine
+  toute l'interface dans la <div id="root">. Changer de page ne recharge pas ce fichier :
+  React remplace seulement le contenu de cette div.
+
+  En développement, Vite sert ce fichier tel quel ; au build, il le recopie dans dist/
+  en remplaçant le lien vers main.jsx par les fichiers construits.
+
+  Travaille avec : src/main.jsx, src/theme.js (même logique de thème), tailwind.config.js
+  (qui lit aussi ce fichier pour trouver les classes bg-page, text-slate…).
+-->
 <html lang="fr">
   <head>
+    <!-- Encodage des caractères (accents) et affichage adapté aux téléphones -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chiro Impact</title>
+    <!-- Prévient le navigateur que la page sait s'afficher en clair et en sombre -->
     <meta name="color-scheme" content="light dark" />
+    <!--
+      Ce script s'exécute tout de suite, avant que la page s'affiche et avant React.
+      Il relit le choix rangé par theme.js dans le localStorage (clé 'chiro-theme') :
+      « sombre », ou « auto » / rien avec un système réglé en sombre → classe `dark` sur <html>.
+      Le try/catch évite une erreur si le stockage est interdit (navigation privée).
+    -->
     <script>
       // Applique le thème (clair / sombre) avant l'affichage, pour éviter un flash blanc. Voir src/theme.js
       try {
@@ -13,10 +34,14 @@
           document.documentElement.classList.add('dark')
       } catch (e) {}
     </script>
+    <!-- Police Rubik (charte Lagom Natura), chargée depuis Google Fonts en graisses 400, 500 et 700 -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" />
   </head>
+  <!-- Classes Tailwind sur <body> : fond de page, couleur de texte et police par défaut -->
   <body class="bg-page text-slate font-sans">
+    <!-- React dessine toute l'appli ici -->
     <div id="root"></div>
+    <!-- type="module" : script JavaScript moderne qui peut utiliser import / export -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

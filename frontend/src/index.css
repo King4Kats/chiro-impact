@@ -1,8 +1,44 @@
+/*
+ * index.css — feuille de style globale de l'interface.
+ *
+ * L'appli utilise Tailwind CSS : au lieu d'écrire du CSS à la main pour chaque élément, on colle
+ * dans le JSX des « classes utilitaires » qui font chacune une seule chose
+ * (p-4 = marge intérieure, font-bold = gras, bg-surface = couleur de fond…).
+ * Au moment du build, Tailwind lit les fichiers listés dans tailwind.config.js (content) et ne
+ * génère que les classes réellement utilisées.
+ *
+ * Ce fichier contient seulement ce qui ne rentre pas dans les classes utilitaires :
+ *  - les variables de couleur des deux thèmes (clair / sombre) ;
+ *  - quelques classes maison réutilisées partout (.card, .btn, .input…).
+ *
+ * Travaille avec : tailwind.config.js (qui lit ces variables), theme.js (qui pose la classe `dark`),
+ * main.jsx (qui importe ce fichier), postcss.config.js (qui fait passer ce fichier dans Tailwind).
+ */
+
+/*
+ * Ces trois lignes sont remplacées par Tailwind au build :
+ *  - base : remise à zéro des styles par défaut du navigateur ;
+ *  - components : nos classes de @layer components (plus bas) ;
+ *  - utilities : toutes les classes utilitaires (p-4, flex, text-sm…).
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Couleurs des deux thèmes, en « R G B » pour que Tailwind puisse ajouter la transparence (bg-slate/50…) */
+/*
+ * Une variable CSS (--c-ink…) est une valeur nommée qu'on réutilise ailleurs avec var(--c-ink).
+ * On écrit seulement les trois nombres rouge vert bleu, sans rgb() : tailwind.config.js les
+ * enveloppe dans rgb(… / opacité). C'est ce qui rend possible une classe comme bg-yellow/20
+ * (jaune à 20 % d'opacité).
+ *
+ * :root = la balise <html>. :root.dark = la balise <html> quand elle porte la classe `dark`.
+ * Le second bloc remplace les valeurs du premier en thème sombre : les classes restent les mêmes,
+ * seules les couleurs changent.
+ *
+ * @layer base : range ces règles dans la couche « base » de Tailwind, pour qu'elles passent
+ * avant les composants et les utilitaires (une classe utilitaire peut donc toujours les écraser).
+ */
 @layer base {
   :root {
     --c-ink: 68 64 90;          /* #44405a, ardoise Lagom */
@@ -27,6 +63,18 @@
 }
 
 /* Petits composants réutilisables, définis une fois ici */
+/*
+ * @apply recopie dans la règle le contenu de plusieurs classes Tailwind. Ainsi on écrit
+ * className="btn" dans le JSX au lieu de répéter quinze classes sur chaque bouton.
+ * Les préfixes hover: / focus: / disabled: n'appliquent la classe que dans cet état
+ * (souris au-dessus, champ sélectionné, bouton désactivé).
+ *
+ *  .card      : cadre blanc (ou sombre) à bord fin, utilisé pour chaque bloc ;
+ *  .btn       : bouton principal ; .btn-green et .btn-ghost s'ajoutent à .btn pour changer son allure ;
+ *  .input     : champ de saisie ou liste déroulante ;
+ *  .label     : petit titre au-dessus d'un champ ;
+ *  .th / .td  : cellules d'en-tête et de contenu des tableaux.
+ */
 @layer components {
   .card { @apply bg-surface border border-line rounded; }
   .btn { @apply inline-flex items-center gap-2 px-4 py-2 rounded-sm font-medium text-white bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed transition; }

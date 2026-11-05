@@ -160,7 +160,7 @@ Mac Aodha et al. (2022), application note AudioMoth « Triggered T.WAV », firmw
 | Basse | Recharts 2 n'est plus maintenu ; bundle JS de 600 ko | Passer à Recharts 3, découper le bundle |
 | Basse | Pas de tests de l'interface | Quelques tests Playwright sur les parcours principaux |
 | Basse | `install.bat` jamais testé sur un PC vierge | Le tester sur un autre PC de l'asso |
-| Basse | Rien n'est commité | Premier commit, puis dépôt GitHub |
+| Basse | ~~Rien n'est commité~~ Fait le 05/11 | Dépôt GitHub |
 
 ---
 

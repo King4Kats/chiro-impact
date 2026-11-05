@@ -1,9 +1,19 @@
+# .gitignore — fichiers que git ne doit jamais suivre ni envoyer sur GitHub.
+# Un nom finissant par / désigne un dossier ; *.log = tous les fichiers en .log.
+# Voir aussi .dockerignore, qui joue le même rôle pour l'image Docker.
+
+# Données locales : base SQLite et fichiers WAV déposés (lourds et propres à chaque installation)
 backend/data/
+# Dépendances et résultat du build de l'interface (recréés par npm ci / npm run build)
 frontend/node_modules/
 frontend/dist/
+# Fichiers compilés de Python
 __pycache__/
 *.pyc
+# Environnement virtuel Python (recréé par install.bat)
 .venv/
+# Secrets du déploiement (adresse, identifiant et mot de passe chiffré) : ne jamais publier
 deploy/.env
+# Fichiers temporaires des tests et journaux
 .pytest_cache/
 *.log

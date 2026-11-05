@@ -1,11 +1,21 @@
 # Ce qui ne doit PAS partir dans l'image Docker (lourd, local ou secret)
+#
+# Quand on lance « docker build », Docker envoie d'abord tout le dossier du projet au
+# moteur Docker (le « contexte »). Les chemins ci-dessous en sont exclus : la construction
+# est plus rapide et rien de privé ne peut se retrouver dans l'image par un COPY.
+# ** = n'importe quel sous-dossier. Travaille avec : Dockerfile.
+
+# Historique git, dépendances Node et interface déjà construite (le Dockerfile les refait lui-même)
 .git
 **/node_modules
 frontend/dist
+# Environnement Python local et données locales (base + WAV de ton PC)
 backend/.venv
 backend/data
+# Fichiers temporaires de Python et des tests
 **/__pycache__
 **/*.pyc
 **/.pytest_cache
+# Secrets du déploiement, et journaux
 deploy/.env
 *.log

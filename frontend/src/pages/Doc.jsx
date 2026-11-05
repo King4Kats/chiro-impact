@@ -1,14 +1,65 @@
-// Page « Comment ça marche » : ce que fait VRAIMENT l'application, ses limites et ses sources.
-// Règle : chaque affirmation de cette page doit être vérifiable (code de l'appli ou source citée).
-// Dernière relecture complète : 5 novembre 2026 (voir docs/AUDIT.md).
+/*
+ * ============================================================================
+ * Doc.jsx — la page « Comment ça marche » (adresse « /doc »)
+ * ============================================================================
+ *
+ * RÔLE DE LA PAGE
+ *   Expliquer ce que fait VRAIMENT l'application, ses limites et ses sources.
+ *   Règle : chaque affirmation de cette page doit être vérifiable (code de
+ *   l'appli ou source citée). Dernière relecture complète : 5 novembre 2026
+ *   (voir docs/AUDIT.md). Si le traitement change côté serveur (seuils, durée
+ *   des tranches, version de BatDetect2…), cette page doit être mise à jour.
+ *
+ * DONNÉES DEMANDÉES À L'API
+ *   Aucune. C'est une page statique : tout le texte est écrit dans ce fichier.
+ *   (Le seul lien vers le serveur est « /docs », qui ouvre la documentation
+ *   technique de l'API générée par FastAPI.)
+ *
+ * SOMMAIRE DU FICHIER
+ *   - H2, P, Code, A, Ul : petits composants de mise en forme réutilisés partout.
+ *   - CHAIN        : les étapes du schéma « chaîne de traitement » (étiquettes + flèches).
+ *   - STEPS        : les 6 étapes détaillées, numérotées.
+ *   - READ         : l'explication des colonnes du tableau des cris.
+ *   - JSON_SAMPLE  : un exemple de sortie brute de BatDetect2.
+ *   - Doc          : la page elle-même (export par défaut), qui assemble tout ça.
+ *
+ * NOTIONS UTILES POUR LIRE CE FICHIER
+ *   - Un « composant » React est une fonction qui renvoie ce qu'il faut afficher.
+ *     Ce qui ressemble à du HTML (<p>, <b>…) s'appelle du JSX : une écriture
+ *     transformée en JavaScript au moment de la compilation. On y écrit
+ *     `className` au lieu de `class`, et on insère des valeurs entre accolades {…}.
+ *   - Ce fichier n'importe rien : il n'utilise ni hook ni API. Le JSX y
+ *     fonctionne sans `import React`, grâce à la compilation de Vite.
+ *   - Les classes « text-xl font-bold mt-4… » sont des styles Tailwind (une
+ *     classe = un petit style). Le préfixe `sm:` veut dire « à partir de 640 px
+ *     de large ». `card` est un raccourci maison défini dans src/index.css.
+ */
 
-// Petits composants de mise en forme (déclarés en premier : les listes ci-dessous les utilisent)
+// --- Petits composants de mise en forme ---
+// Déclarés en premier : les listes ci-dessous les utilisent.
+// Ils évitent de répéter les mêmes classes Tailwind à chaque titre ou paragraphe.
+// Chacun reçoit ses « props » (ses paramètres) dans un objet ; `{ children }`
+// déstructure cet objet pour récupérer `children`, une prop spéciale de React :
+// c'est tout ce qu'on écrit ENTRE la balise ouvrante et la balise fermante.
+// Exemple : <P>Bonjour</P> → children vaut « Bonjour ».
+// Ces composants sont écrits en « fonction fléchée » : `(paramètres) => résultat`.
+//   - H2   : titre de section.
+//   - P    : paragraphe, limité à environ 72 caractères de large (max-w-[72ch]) pour rester lisible.
+//   - Code : mot technique en police à chasse fixe sur fond vert pâle (noms de champs, de fichiers).
+//   - A    : lien externe. target="_blank" l'ouvre dans un nouvel onglet ;
+//            rel="noreferrer" empêche la page ouverte d'agir sur la nôtre et
+//            de savoir d'où vient le visiteur.
+//   - Ul   : liste à puces (list-disc) avec un peu d'espace entre les points.
 const H2 = ({ children }) => <h2 className="text-xl font-bold mt-4">{children}</h2>
 const P = ({ children }) => <p className="max-w-[72ch] leading-relaxed">{children}</p>
 const Code = ({ children }) => <code className="font-mono text-[0.85em] bg-green-soft px-1.5 py-px rounded-sm">{children}</code>
 const A = ({ href, children }) => <a href={href} target="_blank" rel="noreferrer" className="text-green-dark underline underline-offset-2 hover:text-slate">{children}</a>
 const Ul = ({ children }) => <ul className="list-disc pl-5 grid gap-2 text-sm leading-relaxed max-w-[75ch]">{children}</ul>
 
+// --- Le schéma de la chaîne de traitement ---
+// Chaque élément est un petit tableau [titre, sous-titre]. La page en fait une
+// suite d'étiquettes reliées par des flèches. Le dernier élément est mis en
+// valeur en vert (c'est le résultat final).
 const CHAIN = [
   ['WAV', '250 ou 384 kHz'],
   ['Spectrogramme', 'image temps × fréquence'],
@@ -19,6 +70,14 @@ const CHAIN = [
   ['Comparaison', 'festival vs témoin, avant · pendant · après'],
 ]
 
+// --- Les étapes détaillées ---
+// Chaque étape est un tableau [titre, contenu]. Le contenu est du JSX entouré
+// de <>…</> : c'est un « fragment », une enveloppe invisible qui permet de
+// regrouper plusieurs morceaux (texte, <b>, <Code>…) sans ajouter de balise
+// dans la page. On peut en effet ranger du JSX dans une constante, comme
+// n'importe quelle autre valeur JavaScript.
+// Le numéro de l'étape n'est pas écrit ici : il est calculé à l'affichage à
+// partir de la position dans le tableau.
 const STEPS = [
   ['Enregistrement', <>
     Un enregistreur autonome (AudioMoth le plus souvent) capte l’ultrason. Pour les chauves-souris, l’AudioMoth se règle à
@@ -66,6 +125,8 @@ const STEPS = [
   </>],
 ]
 
+// --- Les colonnes du tableau des cris (page d'un enregistrement) ---
+// [nom de la colonne, explication]. Affiché sous forme de liste de définitions (<dl>).
 const READ = [
   ['Début, Fin', 'Position du cri dans le fichier, en secondes. Un cri de pipistrelle dure quelques millisecondes, un cri de Grand rhinolophe plusieurs dizaines.'],
   ['F. basse, F. haute', 'Bas et haut du cadre de détection, en kHz : à peu près l’étendue en fréquence du cri. Ce n’est pas la « fréquence caractéristique » des naturalistes (fréquence où le cri est le plus fort, ex. ~45 kHz pour la Pipistrelle commune).'],
@@ -74,6 +135,10 @@ const READ = [
   ['Score espèce', 'Score de l’espèce proposée. À prendre avec beaucoup de recul : le modèle n’a pas été évalué sur des données françaises.'],
 ]
 
+// --- Exemple de sortie brute de BatDetect2 ---
+// Les backticks permettent d'écrire une chaîne sur plusieurs lignes en gardant
+// les retours à la ligne. Elle est affichée telle quelle dans un <pre> (bloc
+// qui respecte les espaces et les retours à la ligne).
 const JSON_SAMPLE = `{
   "id": "20180627_215323-RHIFER-LR_0_0.5.wav",
   "duration": 0.5,
@@ -86,9 +151,17 @@ const JSON_SAMPLE = `{
   ]
 }`
 
+// --- La page ---
+// `export default` : c'est ce composant qu'App.jsx importe pour l'adresse /doc.
+// La page est une suite de sections : un titre (H2) puis du texte, un schéma ou une liste.
 export default function Doc() {
   return (
+    // <article> : balise HTML pour un contenu autonome. `grid gap-4` empile les
+    // blocs avec un espace régulier ; max-w-4xl limite la largeur sur grand écran.
     <article className="grid gap-4 max-w-4xl">
+      {/* Section 1 : le but de la chaîne de traitement, en une phrase.
+          (Dans le JSX, un commentaire s'écrit entre accolades comme celui-ci,
+          sinon il serait affiché comme du texte.) */}
       <H2>Ce que fait la chaîne de traitement</H2>
       <P>
         Transformer des enregistrements ultrasons bruts en deux indicateurs comparables avant, pendant et après un festival,
@@ -96,7 +169,18 @@ export default function Doc() {
         d’espèces</b> présents.
       </P>
 
-      {/* Schéma de la chaîne : des étiquettes reliées par des flèches, qui passent à la ligne sur petit écran */}
+      {/* Schéma de la chaîne : des étiquettes reliées par des flèches, qui passent à la ligne sur petit écran.
+          flex-wrap : quand la ligne est pleine, les étiquettes suivantes passent dessous.
+          .map() transforme chaque élément de CHAIN en un bloc. La fonction reçoit
+          ([t, s], i) : la déstructuration sort directement le titre `t` et le
+          sous-titre `s`, et `i` est la position (0, 1, 2…).
+          `key={t}` : React demande une clé unique pour chaque élément d'une liste,
+          afin de les reconnaître d'un affichage à l'autre ; ici les titres sont uniques.
+          Les classes sont assemblées dans un « template literal » (backticks + ${…}),
+          et le ternaire `condition ? A : B` colore en vert le dernier bloc.
+          `i < CHAIN.length - 1 && <span>→</span>` : rendu conditionnel, la flèche
+          n'est ajoutée qu'entre deux blocs, pas après le dernier.
+          aria-hidden : la flèche est décorative, les lecteurs d'écran l'ignorent. */}
       <div className="card p-4 flex flex-wrap items-stretch gap-2" aria-label="Schéma de la chaîne de traitement">
         {CHAIN.map(([t, s], i) => (
           <div key={t} className="flex items-center gap-2">
@@ -109,6 +193,11 @@ export default function Doc() {
         ))}
       </div>
 
+      {/* Section 2 : les étapes numérotées. Chaque carte est une petite grille à
+          2 colonnes : la pastille du numéro à gauche (auto = juste la place
+          nécessaire), le titre et le texte à droite (1fr = le reste).
+          row-span-2 : la pastille occupe la hauteur des deux lignes (titre + texte).
+          Le numéro affiché est i + 1, car les positions d'un tableau commencent à 0. */}
       <div className="grid gap-3">
         {STEPS.map(([title, body], i) => (
           <div key={title} className="card p-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
@@ -119,6 +208,13 @@ export default function Doc() {
         ))}
       </div>
 
+      {/* Section 3 : comment lire les colonnes du tableau des cris.
+          <dl> / <dt> / <dd> : liste de définitions HTML (terme / définition).
+          Sur téléphone, terme et définition sont l'un sous l'autre ; à partir de
+          sm: (640 px), ils sont sur 2 colonnes (sm:grid-cols-[auto_1fr]).
+          La classe `contents` rend la <div> « transparente » pour la grille : ses
+          enfants <dt> et <dd> se placent directement dans les colonnes de la <dl>.
+          La <div> sert seulement à porter la `key` exigée par React. */}
       <H2>Lire le tableau des cris</H2>
       <dl className="card p-4 grid sm:grid-cols-[auto_1fr] gap-x-5 gap-y-2 text-sm">
         {READ.map(([k, v]) => (
@@ -129,6 +225,8 @@ export default function Doc() {
         ))}
       </dl>
 
+      {/* Section 4 : les limites de la méthode, avec des liens vers les sources
+          (composant A défini en haut du fichier : ouverture dans un nouvel onglet). */}
       <H2>Ce que la méthode ne peut pas faire</H2>
       <Ul>
         <li><b>Compter des individus.</b> Un micro ne distingue pas une pipistrelle qui passe 50 fois de 50 pipistrelles qui passent une fois. L’acoustique mesure une activité, jamais un effectif.</li>
@@ -140,6 +238,7 @@ export default function Doc() {
         <li><b>Tout capter.</b> Un enregistreur passif rate une partie des contacts (Barataud 2021). Ce qui compte, c’est de garder le même matériel et les mêmes réglages d’une phase et d’un site à l’autre.</li>
       </Ul>
 
+      {/* Section 5 : ce qu'il faut en plus de l'application pour conclure à un impact. */}
       <H2>Ce qu’il faut pour prouver un impact</H2>
       <P>L’application fournit les données ; la preuve demande en plus :</P>
       <Ul>
@@ -149,6 +248,7 @@ export default function Doc() {
         <li><b>Une analyse par groupe</b> : les effets diffèrent selon les groupes. Hooker et al. (2023), une étude publiée sur la musique de festival et les chauves-souris, trouvent une baisse d’activité pour les Noctules / Sérotines et la Pipistrelle commune, pas pour les Myotis (<A href="https://doi.org/10.1002/2688-8319.12250">Ecological Solutions and Evidence</A>).</li>
       </Ul>
 
+      {/* Section 6 : la licence du modèle utilisé. */}
       <H2>Licence de BatDetect2</H2>
       <P>
         BatDetect2 (code et modèle) est publié sous licence <A href="https://github.com/macaodha/batdetect2/blob/main/LICENSE.md">Creative Commons BY-NC 4.0</A> :
@@ -156,10 +256,16 @@ export default function Doc() {
         est rémunérée (par exemple par l’organisateur du festival), il faut d’abord demander l’accord des auteurs.
       </P>
 
+      {/* Section 7 : un exemple de sortie brute de BatDetect2 (constante JSON_SAMPLE).
+          overflow-x-auto : si une ligne est trop longue, le bloc défile horizontalement
+          au lieu de déborder de l'écran. */}
       <H2>Format de sortie (JSON BatDetect2)</H2>
       <P>Pour chaque fichier, BatDetect2 produit une liste de cris (scores arrondis à 3 décimales). L’application les range en base, une ligne par cri ; ce sont ces lignes qu’affiche le tableau.</P>
       <pre className="card p-4 overflow-x-auto text-xs leading-relaxed font-mono">{JSON_SAMPLE}</pre>
 
+      {/* Section 8 : comment l'application est construite et où sont stockés les sons.
+          Le dernier lien est un <a> classique (et non le composant A) : /docs est
+          une page servie par le serveur FastAPI, on l'ouvre dans le même onglet. */}
       <H2>Architecture de l’application</H2>
       <Ul>
         <li><b>Serveur (backend)</b> : Python + FastAPI. Il reçoit les WAV, lance BatDetect2 en arrière-plan (un fichier à la fois), calcule contacts et groupes, dessine les spectrogrammes et range tout dans une base SQLite.</li>
