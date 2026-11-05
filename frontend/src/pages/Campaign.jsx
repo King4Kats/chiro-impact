@@ -391,8 +391,10 @@ export function fmtDur(s) {
   // `== null` (deux signes égal) attrape à la fois null et undefined : durée inconnue.
   if (s == null) return '–'
   if (s < 60) return `${s.toFixed(1)} s`
+  // On arrondit d'abord à la seconde entière, sinon 119,6 s donnerait « 1 min 60 s ».
   // Math.floor arrondit vers le bas ; `%` donne le reste de la division (les secondes restantes).
-  const m = Math.floor(s / 60), sec = Math.round(s % 60)
+  const t = Math.round(s)
+  const m = Math.floor(t / 60), sec = t % 60
   return m < 60 ? `${m} min ${sec} s` : `${Math.floor(m / 60)} h ${m % 60} min`
 }
 

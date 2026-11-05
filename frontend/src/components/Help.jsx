@@ -137,7 +137,7 @@ export default function Help({ text, className = '', align }) {
               ou en bas (bulle au-dessus). aria-hidden : purement décorative. */}
           {pos && (
             <span aria-hidden
-              className={`absolute w-0 h-0 border-[6px] border-transparent ${pos.below ? 'bottom-full border-b-slate' : 'top-full border-t-slate'}`}
+              className={`absolute w-0 h-0 border-[6px] border-transparent ${pos.below ? 'bottom-full border-b-brand' : 'top-full border-t-brand'}`}
               style={{ left: pos.arrow - 6 }} />
           )}
           {text}

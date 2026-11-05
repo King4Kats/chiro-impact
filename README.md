@@ -234,7 +234,7 @@ chiro-impact/
 │   │   ├── spectro.py         image du spectrogramme et extrait sonore ralenti
 │   │   └── config.py          réglages (variables d'environnement)
 │   ├── scripts/creer_demo.py  fabrique une campagne de démonstration
-│   └── tests/                 44 tests automatiques (pytest)
+│   └── tests/                 45 tests automatiques (pytest)
 ├── frontend/                  interface web (React + Vite + Tailwind)
 │   └── src/
 │       ├── pages/             Campagnes, Campagne, Fichier (spectrogramme), Comment ça marche
@@ -275,7 +275,7 @@ cd backend
 .venv\Scripts\python -m pytest
 ```
 
-44 tests, environ 1 min 30. Ils utilisent de vrais cris de chauves-souris (`docs/demo_wav/`) et comparent les
+45 tests, environ 1 min 30. Ils utilisent de vrais cris de chauves-souris (`docs/demo_wav/`) et comparent les
 détections de l'outil à celles de BatDetect2 utilisé directement.
 
 ### Campagne de démonstration

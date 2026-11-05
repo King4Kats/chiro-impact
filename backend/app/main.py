@@ -303,12 +303,24 @@ def get_campaign(cid: int):
     return {**_row(camp), "sites": [_row(s) for s in sites]}
 
 
+def _refuse_null(data: dict, *fields: str) -> None:
+    """
+    Refuse (erreur 422) un champ envoyé explicitement à null alors que la base l'interdit.
+    Sans ce contrôle, `{"name": null}` passerait la validation puis ferait planter l'UPDATE
+    (colonne NOT NULL) avec une erreur 500 peu claire.
+    """
+    for f in fields:
+        if f in data and data[f] is None:
+            raise HTTPException(422, f"Le champ « {f} » ne peut pas être vide")
+
+
 @app.patch("/api/campaigns/{cid}")
 def update_campaign(cid: int, body: CampaignPatch):
     """Modifie une campagne. Changer les dates du festival reclasse les fichiers en phase « auto »."""
     # `exclude_unset=True` : on ne garde que les champs réellement envoyés par l'interface.
     # Ça permet de distinguer « champ non envoyé » (on n'y touche pas) de « champ envoyé vide ».
     data = body.model_dump(exclude_unset=True)
+    _refuse_null(data, "name")
     with get_conn() as c:
         camp = _row(_campaign_or_404(c, cid))
         # Les dates envoyées sont converties en texte AAAA-MM-JJ (ou None pour les effacer)
@@ -366,6 +378,7 @@ def create_site(cid: int, body: SiteIn):
 def update_site(sid: int, body: SitePatch):
     """Modifie le nom, le statut témoin ou les notes d'un site (seulement les champs envoyés)."""
     data = body.model_dump(exclude_unset=True)
+    _refuse_null(data, "name", "is_control")
     # Même conversion booléen → 0/1 que pour la création
     if "is_control" in data:
         data["is_control"] = int(data["is_control"])

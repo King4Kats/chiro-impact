@@ -343,3 +343,14 @@ def test_heure_lue_dans_le_fichier_et_mode_declenche(client, tmp_path):
     # Nettoyage : on attend la fin de l'analyse, puis on supprime la campagne de ce test.
     worker.wait_idle(60)
     client.delete(f"/api/campaigns/{c['id']}")
+
+
+# Un nom envoyé explicitement à null doit être refusé proprement (422), pas faire planter le serveur (500).
+def test_patch_nom_vide_refuse(client):
+    cid = client.post("/api/campaigns", json={"name": "Test null"}).json()["id"]
+    assert client.patch(f"/api/campaigns/{cid}", json={"name": None}).status_code == 422
+    sid = client.post(f"/api/campaigns/{cid}/sites", json={"name": "S"}).json()["id"]
+    assert client.patch(f"/api/sites/{sid}", json={"name": None}).status_code == 422
+    assert client.patch(f"/api/sites/{sid}", json={"is_control": None}).status_code == 422
+    assert client.patch(f"/api/sites/{sid}", json={"name": "S2"}).status_code == 200
+    client.delete(f"/api/campaigns/{cid}")
