@@ -1,0 +1,11 @@
+# Ce qui ne doit PAS partir dans l'image Docker (lourd, local ou secret)
+.git
+**/node_modules
+frontend/dist
+backend/.venv
+backend/data
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+deploy/.env
+*.log

@@ -1,0 +1,47 @@
+# ===========================================================================
+#  Chiro Impact sur un serveur qui a déjà Traefik (HTTPS automatique).
+#
+#  Fichier deploy/.env (jamais commité) :
+#    CHIRO_HOST=chiro.example.org      # adresse publique
+#    CHIRO_AUTH='lagom:$apr1$....'                       # identifiant:mot de passe chiffré
+#        (fabriquer avec : openssl passwd -apr1 'le-mot-de-passe' ; garder les guillemets simples)
+#
+#  Lancer (depuis le dossier qui contient Dockerfile) :
+#    docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+# ===========================================================================
+name: chiro-impact
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: chiro-impact:latest
+    restart: unless-stopped
+    environment:
+      # BatDetect2 n'utilise que 4 cœurs : le serveur reste disponible pour les autres services
+      CHIRO_THREADS: "4"
+    volumes:
+      - data:/data            # base SQLite + fichiers WAV déposés
+    cpus: 4
+    mem_limit: 6g
+    # Un seul réseau : celui de Traefik (déjà existant, en 172.30.x).
+    # Pas de réseau propre à ce projet → pas de souci de sous-réseau 192.168.x sur ce serveur.
+    networks: [traefik-proxy]
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
+      - traefik.http.routers.chiro.rule=Host(`${CHIRO_HOST}`)
+      - traefik.http.routers.chiro.entrypoints=https
+      - traefik.http.routers.chiro.tls.certresolver=letsencrypt
+      - traefik.http.routers.chiro.middlewares=chiro-auth
+      # Accès protégé par identifiant / mot de passe tant que l'appli n'a pas ses propres comptes
+      - traefik.http.middlewares.chiro-auth.basicauth.users=${CHIRO_AUTH}
+      - traefik.http.services.chiro.loadbalancer.server.port=8000
+
+networks:
+  traefik-proxy:
+    external: true
+
+volumes:
+  data: {}
