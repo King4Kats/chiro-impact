@@ -283,3 +283,16 @@ Il a aussi demandé une mise en ligne temporaire.
   - couleurs centralisées en variables CSS (`src/index.css`), mêmes noms de classes Tailwind ;
   - graphiques de la synthèse et spectrogramme (paramètre `theme=dark`) adaptés ;
   - pas de flash blanc au chargement (script dans `index.html`).
+
+## 2026-11-05 (soir) — Code commenté, README illustré, dépôt public
+
+- **Dépôt public** : https://github.com/King4Kats/chiro-impact (licence MIT pour notre code ; BatDetect2 reste CC BY-NC).
+- Avant publication, l'IP publique et le nom du serveur ont été retirés de tout l'historique.
+- **Code commenté bloc par bloc** pour un développeur débutant (tous les fichiers). Vérifié automatiquement :
+  aucun changement de code (arbre Python et sortie esbuild identiques), 45 tests OK.
+- **README réécrit** : principe BACI, contacts, installation, utilisation, 4 schémas (Mermaid), limites.
+- **Corrections** : flèche des bulles d'aide en thème sombre, « 1 min 60 s », `{"name": null}` → 422 au lieu de 500.
+- **Défauts repérés, pas encore corrigés** : suppressions sans message d'erreur si le serveur échoue (campagne,
+  site, fichier) ; changer le site d'un fichier ne vérifie pas les doublons ; la frise d'un fichier n'a pas de
+  commande clavier propre ; CORS ouvert à toutes les origines.
+- Le site en ligne temporaire n'a pas encore reçu le thème clair/sombre ni ces corrections.
